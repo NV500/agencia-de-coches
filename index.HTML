@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agencia de Coches</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 20px;
+            background-color: #f8f8f8;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            margin-bottom: 15px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #modelsList, #addModelForm {
+            display: none;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        #addModelForm button {
+            background-color: #4CAF50;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        #addModelForm button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Bienvenido a la Agencia de Coches</h1>
+
+    <form id="loginForm">
+        <label for="email">Correo Electrónico:</label>
+        <input type="email" id="email" required>
+
+        <label for="password">Contraseña:</label>
+        <input type="password" id="password" required>
+
+        <button type="button" onclick="login()">Iniciar Sesión</button>
+    </form>
+
+    <div id="modelsList">
+        <h2>Lista de Modelos de Coches</h2>
+        <table id="modelsTable">
+            <!-- Aquí se mostrará la lista de modelos de coches -->
+        </table>
+        <button onclick="showAddModelForm()">Agregar Nuevo Modelo</button>
+    </div>
+
+    <div id="addModelForm">
+        <h2>Agregar Nuevo Modelo de Coche</h2>
+        <!-- Formulario para agregar nuevos modelos de coches -->
+        <label for="modelName">Nombre del Modelo:</label>
+        <input type="text" id="modelName" required>
+
+        <label for="brand">Marca:</label>
+        <input type="text" id="brand" required>
+
+        <label for="year">Año de Fabricación:</label>
+        <input type="number" id="year" required>
+
+        <label for="price">Precio:</label>
+        <input type="number" id="price" required>
+
+        <label for="releaseDate">Fecha de Lanzamiento:</label>
+        <input type="date" id="releaseDate" required>
+
+        <button type="button" onclick="addModel()">Agregar Modelo</button>
+        <button type="button" onclick="showModelsList()">Cancelar</button>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.4.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.4.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.4.1/firebase-firestore.js"></script>
+
+    <script>
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCW7Z3F0u4L1B_W7PvkpSCrq9ZejXQbCcY",
+            authDomain: "coches-13e96.firebaseapp.com",
+            projectId: "coches-13e96",
+            storageBucket: "coches-13e96.appspot.com",
+            messagingSenderId: "147996355786",
+            appId: "1:147996355786:web:e3f0e2d25190891ebed833"
+        };
+
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // Variable para referencia a la colección de modelos
+        const modelsCollection = firebase.firestore().collection('models');
+
+        // Función para mostrar la lista de modelos después del inicio de sesión
+        function showModelsList() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('modelsList').style.display = 'block';
+
+            // Obtener y mostrar modelos desde Firestore
+            modelsCollection.get().then((querySnapshot) => {
+                document.getElementById('modelsTable').innerHTML = '<tr><th>Nombre del Modelo</th><th>Marca</th><th>Año</th><th>Precio</th><th>Fecha de Lanzamiento</th></tr>';
+                querySnapshot.forEach((doc) => {
+                    const model = doc.data();
+                    const row = `<tr><td>${model.modelName}</td><td>${model.brand}</td><td>${model.year}</td><td>${model.price}</td><td>${model.releaseDate}</td></tr>`;
+                    document.getElementById('modelsTable').innerHTML += row;
+                });
+            });
+        }
+
+        // Función para agregar un nuevo modelo
+        function addModel() {
+            const modelName = document.getElementById('modelName').value;
+            const brand = document.getElementById('brand').value;
+            const year = parseInt(document.getElementById('year').value);
+            const price = parseFloat(document.getElementById('price').value);
+            const releaseDate = document.getElementById('releaseDate')..value;
+
+                          // Validación simple
+                          if (!modelName || !brand || isNaN(year) || isNaN(price) || !releaseDate) {
+                              alert("Por favor, completa todos los campos correctamente.");
+                              return;
+                          }
+
+                          // Agregar el modelo a Firestore
+                          modelsCollection.add({
+                              modelName: modelName,
+                              brand: brand,
+                              year: year,
+                              price: price,
+                              releaseDate: releaseDate
+                          }).then(() => {
+                              showModelsList(); // Mostrar la lista actualizada después de agregar un modelo
+                          }).catch((error) => {
+                              alert("Error al agregar el modelo: " + error.message);
+                          });
+                      }
+
+                      // Función para iniciar sesión
+                      function login() {
+                          const email = document.getElementById('email').value;
+                          const password = document.getElementById('password').value;
+
+                          firebase.auth().signInWithEmailAndPassword(email, password)
+                              .then((userCredential) => {
+                                  // Usuario autenticado con éxito
+                                  showModelsList();
+                              })
+                              .catch((error) => {
+                                  alert("Error al iniciar sesión: " + error.message);
+                              });
+                      }
+
+                      // Función para mostrar el formulario de agregar modelo
+                      function showAddModelForm() {
+                          document.getElementById('modelsList').style.display = 'none';
+                          document.getElementById('addModelForm').style.display = 'block';
+                      }
+                  </script>
+              </body>
+              </html>
+
